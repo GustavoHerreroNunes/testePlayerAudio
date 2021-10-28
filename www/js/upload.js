@@ -6,10 +6,10 @@ var app = {
     //Array com os arquivos enviados
     filesSended: [],
 
-    //Arquivos recebidos no html
+    //Número de arquivos recebidos no html
     filesHTML: 0,
 
-    //Arquivos enviados para o firebase
+    //Número de arquivos enviados para o firebase
     filesFirebase: 0,
 
     //Construtor do app
@@ -34,9 +34,6 @@ var app = {
         uploadTask.on('state_changed',
             function(snapshot){
             console.log("Uploadtask");
-                
-                var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.info( (app.filesFirebase+1) + "º Upload em " + progress + " %");
 
                 switch(snapshot.state){
                     case 'paused':
@@ -44,6 +41,8 @@ var app = {
                         break;
                     case 'running':
                         console.info("Upload rodando");
+                        var progress = parseFloat( ((snapshot.bytesTransferred / snapshot.totalBytes) * 100)).toFixed(1);
+                        console.info( (app.filesFirebase+1) + "º Upload em " + progress + " %");
                         break;
                 }
             },
@@ -64,6 +63,8 @@ var app = {
                 });
 
                 app.filesFirebase++;
+
+                //Se tiverem sido enviados menos arquivos para o firebase do que recebidos no HTML
                 if(app.filesFirebase < app.filesHTML){
                     app.uploadToFirebase(app.filesSended[app.filesFirebase], refSounds);
                 }
@@ -73,23 +74,21 @@ var app = {
 
     //Cria um objeto file e envia o arquivo para o storage
     upload: function(){
-        try{
-            console.log("AAAA");
-    
-            var filesSelector = document.getElementById("btnCarregar");
+        try{    
+            var filesBtnCarregar = document.getElementById("btnCarregar");
 
-            console.log(filesSelector.files.length);
+            console.log(filesBtnCarregar.files.length);
 
-            app.filesHTML = filesSelector.files.length;
+            app.filesHTML = filesBtnCarregar.files.length;
     
             for(var i = 0; i< app.filesHTML; i++){
-                app.filesSended[i] = filesSelector.files[i];
+                app.filesSended[i] = filesBtnCarregar.files[i];
     
-                console.log(i + "º arquivo: " + app.filesSended[i].name);
+                console.log( (i+1) + "º arquivo: " + app.filesSended[i].name);
             }
 
         }catch(error){
-            console.log(error);
+            console.log("Erro ao criar objeto file: " + error);
         }
 
 
@@ -104,7 +103,7 @@ var app = {
 
 
         }catch(error){
-            console.log("Erro: " + error);
+            console.log("Erro enviar arquivos para o Storage: " + error);
         }
 
     }
