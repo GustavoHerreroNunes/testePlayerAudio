@@ -17,62 +17,80 @@ var app = {
 
     //Cria um objeto file e envia o arquivo para o storage
     upload: function(){
-        var filesSended = null;
-
-        //Tentando enviar o arquivo enviado para um objeto file
         try{
-            filesSended = document.getElementById('btnCarregar').files;
+            console.log("AAAA");
+            var filesSended = [];
+    
+            filesSelector = document.getElementById("btnCarregar");
 
-            console.info("Objeto criado com sucesso: " + filesSended);
-            
+            console.log(filesSelector.files.length);
+    
+            for(var i = 0; i< filesSelector.files.length; i++){
+                filesSended[i] = filesSelector.files[i];
+    
+                console.log(i + "º arquivo: " + filesSended[i].name);
+            }
+
         }catch(error){
-            console.info("Erro ao criar objeto: " + error);
+            console.log(error);
         }
 
-        var refRoot = app.storage.ref().root;
-        var refSouds = refRoot.child('sounds');
 
-        var fileNumber = 1;
-
-        //Enviando arquivo para o storage
-        for(var i = 0; i > filesSended.lenght; i++){
-            var refFiel = refSouds.child(filesSended[i].name);
-
-            var uploadTask = refFiel.put(filesSended[i]);
-
-            uploadTask.on('state_changed',
-                function(snapshot){
-                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.info(fileNumber + "º Upload em " + progress + " %");
+        try{
+            var refRoot = app.storage.ref().root;
+            console.log("Referenciando o root");
     
-                    switch(snapshot.state){
-                        case 'paused':
-                            console.info("Upload pausado");
-                            break;
-                        case 'running':
-                            console.info("Upload rodando");
-                            break;
-                    }
-                },
-                function(error){
-                    switch(error.code){
-                        case 'storage/unauthorized':
-                            console.info("Usuário não autorizado");
-                            break;
-                        case 'storage/canceled':
-                            console.info("Upload cancelado");
-                            break;
-                    }
-                },
-                function(){
-                    uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL){
-                        console.log("Upload concluído!");
-                        console.log("URL para download: " + downloadURL);
-                    });
-                }
-            );
+            var refSouds = refRoot.child('sounds');
+            console.log("Referenciando o \/sounds");
 
-            fileNumber++;
+            var i = 0;
+
+            // Enviando arquivo para o storage
+            do{
+                var refFiel = refSouds.child(filesSended[i].name);
+    
+                var uploadTask = refFiel.put(filesSended[i]);
+                console.log("AAA");
+    
+                uploadTask.on('state_changed',
+                    function(snapshot){
+                        var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.info( (i+1) + "º Upload em " + progress + " %");
+        
+                        switch(snapshot.state){
+                            case 'paused':
+                                console.info("Upload pausado");
+                                break;
+                            case 'running':
+                                console.info("Upload rodando");
+                                break;
+                        }
+                    },
+                    function(error){
+                        switch(error.code){
+                            case 'storage/unauthorized':
+                                console.info("Usuário não autorizado");
+                                break;
+                            case 'storage/canceled':
+                                console.info("Upload cancelado");
+                                break;
+                        }
+                    },
+                    function(){
+                        uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL){
+                            console.log("Upload concluído!");
+                            console.log("URL para download: " + downloadURL);
+                        });
+
+                        i++;
+                    }
+                );
+                
+            }while(i < filesSended.length);
+
+
+        }catch(error){
+            console.log("Erro: " + error);
         }
 
     }
