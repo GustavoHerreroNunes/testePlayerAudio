@@ -19,13 +19,16 @@
             <div class="position-absolute top-50 start-50 translate-middle">
                 <!--Cards para ações no Banco de Dados-->
                 <div class="b-0 content-fluid">
-                    <audio controls autoplay>
-                        <source src="https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/secondUp.mp3?alt=media&token=2083791c-22e8-4292-b7f2-a155be99a4f2" />
+                    <audio id="playerSound" controls>
+                        <source />
                         <p>This browser does not support our audio format</p>
                     </audio>
+                    <br>
+                    <button class="btn btn-outline-dark rounded-circle" id="btnPlay">&#10148;</button>
                 </div>
             </div>
         </div>
         
+        <script type="text/javascript" src="js/player.js"></script>
     </body>
 </html>
