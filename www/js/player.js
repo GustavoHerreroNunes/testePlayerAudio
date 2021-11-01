@@ -70,12 +70,12 @@ var player = {
 
             case "played"://Iniciado
                 player.element.pause();
-                player.sound.state = "paused";
+                player.sound.state = player.element.paused ? "paused" : (console.log("Erro ao pausar áudio"), "played");
                 break;
 
             case "paused"://Pausado
                 player.element.play();
-                player.sound.state = "played";
+                player.sound.state = !player.element.paused ? "played" : (console.log("Erro ao iniciar áudio"), "paused");
                 break;
 
             default://Estado não conhecido
@@ -86,4 +86,4 @@ var player = {
 
 }
 
-player.initialize();
+player.onDeviceReady();
