@@ -19,8 +19,16 @@ var player = {
         ready: false,
         state: "",
         duration: 0.0,
-        currentTime: 0.0
+        currentTime: 0.0,
+        nextId: 0
     },
+
+    //Objeto temporário com as urls dos áudios a serem tocados
+    playlist: [
+        ["Big Dreams", "https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/sounds%2FBig%20Dreams.mp3?alt=media&token=079cb52b-09cb-41be-b049-963dfec7f293"],
+        ["Adventure is Calling", "https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/sounds%2FAdventure_is_Calling.mp3?alt=media&token=b63de635-971f-4b36-9146-3ff8a6c33b32"],
+        ["Lights", "https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/sounds%2FLights.mp3?alt=media&token=9781d5e7-b1e5-4586-a551-0a2ce30ab9a9"]
+    ],
 
     //Construtor do app
     initialize: function(){
@@ -38,7 +46,7 @@ var player = {
             player.setPlayerState();
             document.getElementById("btnStartReading").style.display = "none";
         });
-        player.setSound("https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/sounds%2FOur_Champion.mp3?alt=media&token=73c25e33-d875-43ac-b9cb-69f612097a24");
+        player.setSound();
         /* 2ª opção: iniciar áudio automaticamente 
         player.setPlayerState();
         */
@@ -46,9 +54,9 @@ var player = {
     },
 
     //Método para definir os parâmetros para o áudio a ser tocado
-    setSound: function(url){
-        player.sound.name = "Prism";
-        player.sound.src = url;
+    setSound: function(){
+        player.sound.name = player.playlist[player.sound.nextId][0];
+        player.sound.src = player.playlist[player.sound.nextId][1];
         player.sound.volume = 0.5;
         
         //Enviando a url do áudio para o player no HTML
@@ -56,8 +64,8 @@ var player = {
         player.element.load();
         
         //Esperando o áudio estar pronto para ser tocado
-        var intervalId = null;
-        intervalId = setInterval( function(){
+        var readyStageIntervalId = null;
+        readyStageIntervalId = setInterval( function(){
 
             player.analiseElements[2].innerHTML = player.element.readyState == 4;
 
@@ -72,11 +80,14 @@ var player = {
                 player.sound.duration = player.element.duration;
                 console.log("[element.duration]", player.element.duration);
                 console.log("[sound.duration]", player.sound.duration);
+
+                //Definindo o id da próxima música a ser tocada
+                player.sound.nextId = (player.sound.nextId + 1) % player.playlist.length;
         
                 //Habilitando botão para iniciar leitura
                 document.getElementById("btnStartReading").disabled = false;
                 
-                clearInterval(intervalId);
+                clearInterval(readyStageIntervalId);
             }
         },
         10);
@@ -106,20 +117,32 @@ var player = {
 
     //Método que verifica se o áudio terminou de tocar
     isEnded: function(){
+        //Esperando o áudio terminar de tocar
         setInterval( function(){
             if(player.element.ended){
                 player.setSound("https://firebasestorage.googleapis.com/v0/b/testestreaming-9a6ba.appspot.com/o/sounds%2FAdventure_is_Calling.mp3?alt=media&token=b63de635-971f-4b36-9146-3ff8a6c33b32");
-                player.setPlayerState();
+
+                //Esperano o novo áudio ser definido
+                var setPlayerStateIntervalId = null;
+
+                setPlayerStateIntervalId = setInterval( function(){
+                    if(player.sound.state == "paused"){
+                        player.setPlayerState();
+                        clearInterval(setPlayerStateIntervalId);
+                    }
+                },
+                10);
+                
             }else{
                 player.setCurrentTime();
                 var audioPlayed = parseFloat( ((player.sound.currentTime / player.sound.duration) * 100)).toFixed(2);
 
                 player.analiseElements[0].innerHTML = audioPlayed;
 
-                if(audioPlayed > 90){
+                if(audioPlayed > 90 && player.sound.state == "played"){
                     player.analiseElements[1].innerHTML = player.sound.volume;
 
-                    player.setVolume( (player.sound.volume >= 0) ? player.sound.volume -= 0.001 : 0 );
+                    player.setVolume( (player.sound.volume > 0) ? player.sound.volume -= 0.0005 : 0 );
                 }
             }
         },
