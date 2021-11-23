@@ -107,6 +107,6 @@ var app = {
         }
 
     }
-};
+}
 
-app.onDeviceReady();
+app.initialize();
